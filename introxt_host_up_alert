@@ -1,47 +1,57 @@
 #!/bin/bash
+
+# Clear the terminal for a clean output
 clear
-cd Logo && ./introxt_logo
-cd ..
-echo "Enter Mobile Number";
-read mobileNo;
-echo "Enter Password";
-read password;
-echo "Enter The Number Which Will Receive The Message";
-read num;
 
-curl -i 'https://www.way2sms.com/re-login' -H 'Accept: */*' -H 'Referer: https://www.way2sms.com/' -H 'Origin: https://www.way2sms.com' -H 'X-Requested-With: XMLHttpRequest' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' --data 'mobileNo='$mobileNo'&password='$password'&CatType=&redirectPage=&pid=' --compressed -o send.txt
+# Display the Introxt logo (assuming it's in a subdirectory named "Logo")
+cd Logo && ./introxt_logo && cd ..
 
-grep -v 'HTTP/1.1 200 OK' send.txt > me.txt
-grep -v 'Server: nginx/1.10.2' me.txt > me1.txt
-grep -v 'Content-Type: text/plain;charset=ISO-8859-1' me1.txt > me2.txt
-grep -v 'Date:' me2.txt > me3.txt
-grep -v 'Connection: keep-alive' me3.txt > me4.txt
-grep -v 'Transfer-Encoding: chunked' me4.txt > me5.txt
-grep -v 'Content-Encoding: gzip' me5.txt > me6.txt
-grep -v 'send-sms' me6.txt > me7.txt
-sed "s/Set-Cookie://g" me7.txt > me8.txt
-sed "s/JSESSIONID=//g" me8.txt > me9.txt
-sed "s/HttpOnly//g" me9.txt > me10.txt
-sed "s/Path=//g" me10.txt > me11.txt
-sed -e 's/[;,()'\'']/ /g;s/  */ /g' me11.txt > me12.txt
-declare -a arr;
-arr=($(sed -e 's/[;,()'\'']/ /g;s/  */ /g' me11.txt ));
-echo ${arr[0]};
-echo ${arr[0]} > jason
-declare token
-token=($(sed 's/^....//' jason)) 
-echo $token;
-declare This_host
-This_host=$(hostname)
-echo $This_host
+# Gather user input for credentials and message recipient
+echo "Enter Mobile Number: "
+read mobileNo
+echo "Enter Password: "
+read password
+echo "Enter The Number Which Will Receive The Message: "
+read num
 
-curl -i 'https://www.way2sms.com/smstoss' -H 'Cookie: _ga=GA1.2.1886549816.1557117208; _gid=GA1.2.1210223376.1557117208; pixel_code=pixelCodeArea; __gads=ID=bc21bfdbe7acd9cf:T=1557117224:S=ALNI_MYlSAehidWs-HQ5vSFmQZ8Y_RbPWQ; JSESSIONID='${arr[0]}'; _gat_gtag_UA_131011012_1=1' -H 'Origin: https://www.way2sms.com' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: en-US,en;q=0.9' -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -H 'Accept: */*' -H 'Referer: https://www.way2sms.com/send-sms' -H 'X-Requested-With: XMLHttpRequest' -H 'Connection: keep-alive' --data 'Token='$token'&message=Introxt '$This_host' is up&toMobile='$num'&ssaction=undefined&senderId=WAYSMS' --compressed -o smstoss.txt
+# Function to extract a value from a string using a regular expression
+function extract_value() {
+  grep -oP "$1" | head -1
+}
 
-if [ $? -eq 0 ]
-then 
-echo "Message Successfully sent";
+# Login to Way2SMS and extract authentication token
+session_cookie=$(curl -i 'https://www.way2sms.com/re-login' \
+  -H 'Accept: */*' \
+  -H 'Referer: https://www.way2sms.com/' \
+  -H 'Origin: https://www.way2sms.com' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'User-Agent: Mozilla/5.0' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  --data "mobileNo=$mobileNo&password=$password&CatType=&redirectPage=&pid=" \
+  --compressed -o /dev/null -w '%{cookie_header}')
+token=$(extract_value 'JSESSIONID=([^;]*)' <<< "$session_cookie")
+
+# Get hostname for message content
+hostname=$(hostname)
+
+# Send the SMS message
+curl -i 'https://www.way2sms.com/smstoss' \
+  -H "Cookie: $session_cookie" \
+  -H 'Origin: https://www.way2sms.com' \
+  -H 'Accept-Encoding: gzip, deflate, br' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'User-Agent: Mozilla/5.0' \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+  -H 'Accept: */*' \
+  -H 'Referer: https://www.way2sms.com/send-sms' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'Connection: keep-alive' \
+  --data "Token=$token&message=Introxt $hostname is up&toMobile=$num&ssaction=undefined&senderId=WAYSMS" \
+  --compressed -o /dev/null
+
+# Check for successful message delivery and provide feedback
+if [ $? -eq 0 ]; then
+  echo "Message Successfully sent"
+else
+  echo "Failed to send message"
 fi
-
-
-
-
