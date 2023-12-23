@@ -11,16 +11,16 @@ Clone the repository:
 
 
 ```bash
-[git clone https://github.com/your-username/sms-automation.git](https://github.com/giruu/Host-Up-Alert.git)
+git clone https://github.com/your-username/sms-automation.git
 ```
 Navigate to the cloned directory:
 
 ```bash
-cd sms-automation
+cd Host-Up-Alert
 ```
 Run the script:
 ```bash
-./sms-automation.sh
+./introxt_host_up_alert.sh
 ```
 Follow the on-screen instructions to input your mobile number, password, and the recipient's number.
 
