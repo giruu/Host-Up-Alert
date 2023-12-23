@@ -1,4 +1,0 @@
-Set-Cookie: JSESSIONID=A01~0E52609D7A49E4DA75B2693502298ED2; Path=/; HttpOnly
-Content-Encoding: gzip
-
-send-sms
