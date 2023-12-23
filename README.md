@@ -11,7 +11,7 @@ Clone the repository:
 
 
 ```bash
-git clone https://github.com/your-username/sms-automation.git
+[git clone https://github.com/your-username/sms-automation.git](https://github.com/giruu/Host-Up-Alert.git)
 ```
 Navigate to the cloned directory:
 
